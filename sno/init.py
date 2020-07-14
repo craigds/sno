@@ -897,6 +897,13 @@ def list_import_formats(ctx, param, value):
     "--primary-key",
     help="Which field to use as the primary key. Must be unique. Auto-detected when possible.",
 )
+@click.option(
+    "--max-delta-depth",
+    hidden=True,
+    default=0,
+    type=click.INT,
+    help="--depth option to git-fast-import (advanced users only)",
+)
 def import_table(
     ctx,
     all_tables,
@@ -908,6 +915,7 @@ def import_table(
     source,
     tables,
     table_info,
+    max_delta_depth,
 ):
     """
     Import data into a repository.
@@ -968,7 +976,13 @@ def import_table(
             xml_metadata=info.get('xmlMetadata'),
         )
 
-    fast_import_tables(repo, loaders, message=message, structure_version=version)
+    fast_import_tables(
+        repo,
+        loaders,
+        message=message,
+        structure_version=version,
+        max_delta_depth=max_delta_depth,
+    )
     rs = structure.RepositoryStructure(repo)
     if rs.working_copy:
         # Update working copy with new datasets
@@ -1006,7 +1020,14 @@ def import_table(
     default=str(DEFAULT_STRUCTURE_VERSION),
     hidden=True,
 )
-def init(ctx, do_checkout, message, directory, version, import_from):
+@click.option(
+    "--max-delta-depth",
+    hidden=True,
+    default=0,
+    type=click.INT,
+    help="--depth option to git-fast-import (advanced users only)",
+)
+def init(ctx, do_checkout, message, directory, version, import_from, max_delta_depth):
     """
     Initialise a new repository and optionally import data.
     DIRECTORY must be empty. Defaults to the current directory.
@@ -1035,7 +1056,13 @@ def init(ctx, do_checkout, message, directory, version, import_from):
     repo = pygit2.init_repository(str(repo_path), bare=True)
 
     if import_from:
-        fast_import_tables(repo, loaders, message=message, structure_version=version)
+        fast_import_tables(
+            repo,
+            loaders,
+            message=message,
+            structure_version=version,
+            max_delta_depth=max_delta_depth,
+        )
 
         if do_checkout:
             # Checkout a working copy
