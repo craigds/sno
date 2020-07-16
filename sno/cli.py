@@ -10,6 +10,7 @@ import pygit2
 from . import core  # noqa
 from . import (
     apply,
+    benchmark,
     branch,
     checkout,
     clone,
@@ -132,6 +133,7 @@ def cli(ctx, repo_dir, verbose, post_mortem):
 
 # Commands from modules:
 cli.add_command(apply.apply)
+cli.add_command(benchmark.benchmark)
 cli.add_command(branch.branch)
 cli.add_command(checkout.checkout)
 cli.add_command(checkout.restore)
