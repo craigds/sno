@@ -410,7 +410,7 @@ class DatasetStructure:
                     continue
 
                 e = gpkg.geom_envelope(geom)
-                yield (pk, e, None)
+                yield (pk, e, geom)
 
                 if c % 50000 == 0:
                     print(f"  {c} features... @{time.monotonic()-t0:.1f}s")

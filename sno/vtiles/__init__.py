@@ -15,6 +15,7 @@ import click
 from osgeo import ogr, osr
 
 from sno.exceptions import NotFound
+from sno.gpkg import gpkg_geom_to_ogr
 from sno.structure import RepositoryStructure
 from sno.pyvendor.vector_tile_base import VectorTile, PolygonFeature
 
@@ -191,12 +192,11 @@ def make_handler(rs, datasets):
                     setattr(
                         spatial_indexes, dataset.name, index,
                     )
-
-                pks = list(index.intersection((w, s, e, n)))
-                num_features += len(pks)
-                for pk in pks:
-                    f = dataset.get_feature(pk)
-                    geom = f.pop(dataset.geom_column_name)
+                items = list(index.intersection((w, s, e, n), objects=True))
+                num_features += len(items)
+                for item in items:
+                    pk = item.id
+                    geom = gpkg_geom_to_ogr(item.object)
 
                     # reproject geom to spherical merc
                     if geom is None:
@@ -206,6 +206,8 @@ def make_handler(rs, datasets):
 
                     feature = self.add_feature(vlayer, geom, (minx, miny, maxx, maxy))
                     if 'include_attributes' in self.GET:
+                        f = dataset.get_feature(pk)
+                        f.pop(dataset.geom_column_name)
                         feature.attributes = f
                     feature.id = f"{dataset.name}::{pk}"
             self.num_features = num_features
